@@ -3,8 +3,15 @@
 # uses signal.savgol_filter to smoooth out the brightest
 #
 #
-#
-#
+# Tip from chat GPT to try 
+# 6. Mean brightness is very sensitive to clouds
+# Mean works, but sunsets benefit from median or percentile.
+# You already named the function get_median — but you’re computing mean.
+# If you want median luminance:
+#      -format %[fx:median*quantumrange]
+# Or robust percentile:
+#      -format %[fx:percentile(70)*quantumrange]
+# This alone can massively reduce flicker.
 
 from datetime import datetime as dt
 from datetime import timedelta as td
