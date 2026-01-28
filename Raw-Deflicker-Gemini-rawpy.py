@@ -13,18 +13,23 @@ WINDOW_SIZE = 31  # Must be odd
 POLY_ORDER = 3
 
 def get_brightness(file_path):
-    """Extracts mean brightness using dcraw and ImageMagick."""
     cmd1 = f"dcraw -c -4 '{file_path}'"
     cmd2 = "convert - -crop 4378x1700+0+0 -colorspace Gray -format %[fx:mean*quantumrange] info:"
     
-    try:
-        p1 = subprocess.Popen(shlex.split(cmd1), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-        p2 = subprocess.Popen(shlex.split(cmd2), stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-        out, _ = p2.communicate()
-        return float(out.decode('utf-8').strip())
-    except Exception as e:
-        print(f"Error processing {file_path}: {e}")
-        return None
+    p1 = subprocess.Popen(shlex.split(cmd1), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p2 = subprocess.Popen(shlex.split(cmd2), stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+    out, err = p2.communicate()
+    
+    # Check if we actually got data
+    result = out.decode('utf-8').strip()
+    if not result:
+        # This captures the actual error message from dcraw or convert
+        error_msg = err.decode('utf-8')
+        print(f"Skipping {file_path} due to error: {error_msg}")
+        return None 
+        
+    return float(result)
 
 # 1. Gather files and Analyze
 files = sorted([f for f in SOURCE_PATH.iterdir() if f.is_file()])
