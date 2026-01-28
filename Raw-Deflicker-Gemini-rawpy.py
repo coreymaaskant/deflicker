@@ -5,6 +5,7 @@ import numpy as np
 from scipy import signal
 from datetime import datetime as dt
 from pathlib import Path
+import rawpy
 
 # Configuration
 SOURCE_PATH = Path("/home/ubuntu/2023-07-18")
@@ -13,23 +14,25 @@ WINDOW_SIZE = 31  # Must be odd
 POLY_ORDER = 3
 
 def get_brightness(file_path):
-    cmd1 = f"dcraw -c -4 '{file_path}'"
-    cmd2 = "convert - -crop 4378x1700+0+0 -colorspace Gray -format %[fx:mean*quantumrange] info:"
-    
-    p1 = subprocess.Popen(shlex.split(cmd1), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    p2 = subprocess.Popen(shlex.split(cmd2), stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
-    out, err = p2.communicate()
-    
-    # Check if we actually got data
-    result = out.decode('utf-8').strip()
-    if not result:
-        # This captures the actual error message from dcraw or convert
-        error_msg = err.decode('utf-8')
-        print(f"Skipping {file_path} due to error: {error_msg}")
-        return None 
-        
-    return float(result)
+    """
+    Decodes RAW and calculates mean brightness using NumPy.
+    Replaces dcraw and ImageMagick.
+    """
+    try:
+        with rawpy.imread(str(file_path)) as raw:
+            # postprocess(user_flip=0) prevents auto-rotation and scaling
+            # half_size=True makes it MUCH faster for brightness analysis
+            rgb = raw.postprocess(use_camera_wb=False, 
+                                 user_flip=0, 
+                                 no_auto_bright=True, 
+                                 half_size=True)
+            
+            # Convert to grayscale (Luminance Y' ≈ 0.299R + 0.587G + 0.114B)
+            # Or simply take the mean of all pixels for a raw estimate
+            return np.mean(rgb)
+    except Exception as e:
+        print(f"Failed to process {file_path}: {e}")
+        return None
 
 # 1. Gather files and Analyze
 files = sorted([f for f in SOURCE_PATH.iterdir() if f.is_file()])
