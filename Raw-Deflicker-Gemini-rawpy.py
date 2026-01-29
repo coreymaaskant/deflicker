@@ -10,8 +10,19 @@ import rawpy
 # Configuration
 SOURCE_PATH = Path("/home/ubuntu/2023-07-18")
 PROFILE_TEMPLATE = Path("/home/ubuntu/.config/RawTherapee/profiles/sunset.pp3")
-WINDOW_SIZE = 31  # Must be odd
-POLY_ORDER = 3
+WINDOW_SIZE = 21  # Must be odd
+POLY_ORDER = 2
+
+# 1. Moderate Smoothing (Balanced)
+# window_length: 31 to 51
+# polyorder: 3
+# Why: A window of ~41 points (about 8% of your data) with a cubic polynomial effectively reduces 
+# random noise while preserving the shape of significant peaks. 
+# 2. Aggressive Smoothing (Heavy Noise)
+# window_length: 71 to 91
+# polyorder: 2
+# Why: If your noise is severe and your signal features are broad, a larger window with a quadratic 
+# fit provides heavy suppression of high-frequency fluctuations.
 
 def get_brightness(file_path):
     """

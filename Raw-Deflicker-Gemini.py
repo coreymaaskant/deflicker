@@ -9,8 +9,8 @@ from pathlib import Path
 # Configuration
 SOURCE_PATH = Path("/home/ubuntu/2023-07-18")
 PROFILE_TEMPLATE = Path("/home/ubuntu/.config/RawTherapee/profiles/sunset.pp3")
-WINDOW_SIZE = 31  # Must be odd
-POLY_ORDER = 3
+WINDOW_SIZE = 21  # Must be odd
+POLY_ORDER = 2
 
 def get_brightness(file_path):
     """Extracts mean brightness using dcraw and ImageMagick."""
