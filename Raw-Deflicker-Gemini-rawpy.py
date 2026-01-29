@@ -72,7 +72,7 @@ for k, f_path in enumerate(files):
     with open(pp3_path, "w") as out_file:
         for line in template_lines:
             if line.startswith("Compensation="):
-                # Apply the calculated compensation (+1 as per your original logic)
+                # Apply the calculated compensation (+1 I seem to just add 1 stop to all my 5D raw files)
                 out_file.write(f"Compensation={E[k] + 1}\n")
             else:
                 out_file.write(line)
