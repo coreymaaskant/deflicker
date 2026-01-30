@@ -5,6 +5,7 @@ import numpy as np
 from scipy import signal
 from datetime import datetime as dt
 from pathlib import Path
+import matplotlib.pyplot as plt  # Added for graphing
 
 # Configuration
 SOURCE_PATH = Path("/home/ubuntu/2023-07-18")
@@ -57,5 +58,39 @@ for k, f_path in enumerate(files):
                 out_file.write(f"Compensation={E[k] + 1}\n")
             else:
                 out_file.write(line)
+
+# --- 4. Plotting & Saving Section ---
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
+plt.subplots_adjust(hspace=0.3)
+
+# Top Graph: Brightness Comparison
+ax1.plot(M, label='Raw Brightness (M)', color='lightgray', alpha=0.7)
+ax1.plot(y_smooth, label='Savgol Filtered (y_smooth)', color='blue', linewidth=2)
+ax1.set_title(f'Brightness Analysis (Window: {WINDOW_SIZE}, Poly: {POLY_ORDER})', fontsize=14)
+ax1.set_ylabel('Mean Pixel Value')
+ax1.legend()
+ax1.grid(True, linestyle='--', alpha=0.6)
+
+# Bottom Graph: Exposure Compensation
+# Note: E + 1 reflects the actual value written to the .pp3 files
+ax2.plot(E + 1, label='Final Compensation (E + 1)', color='red')
+ax2.axhline(y=1, color='black', linestyle='-', linewidth=0.8) # Baseline at +1
+ax2.set_title('Calculated Exposure Adjustment (Stops)', fontsize=14)
+ax2.set_ylabel('Exposure Value (EV)')
+ax2.set_xlabel('Frame Number')
+ax2.legend()
+ax2.grid(True, linestyle='--', alpha=0.6)
+
+# Generate filename and save
+timestamp = dt.now().strftime('%Y%m%d_%H%M%S')
+output_plot = SOURCE_PATH / f"deflicker_analysis_{timestamp}.png"
+
+plt.savefig(output_plot, dpi=300, bbox_inches='tight')
+print(f"Plot saved to: {output_plot}")
+
+# Optional: Still show the window if you're running interactively
+# plt.show() 
+
+plt.close(fig) # Close to free up memory
 
 print(f"Completed at: {dt.now().strftime('%H:%M:%S')}")
