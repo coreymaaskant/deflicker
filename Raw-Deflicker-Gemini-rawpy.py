@@ -26,6 +26,12 @@ POLY_ORDER = 2
 # Why: If your noise is severe and your signal features are broad, a larger window with a quadratic 
 # fit provides heavy suppression of high-frequency fluctuations.
 
+# crop_percent(top, left, height, width)
+# Full Image	(0.0, 0.0, 1.0, 1.0)	Averages every single pixel.
+# Center Spot	(0.4, 0.4, 0.2, 0.2)	Acts like a "Spot Meter" on a camera. Ignores distracting edges.
+# Lower Third	(0.66, 0.0, 0.33, 1.0)	Good if you want to sample just the landscape and ignore a flickering sky.
+# Sky Sample	(0.0, 0.0, 0.4, 1.0)	Good for matching exposure based solely on the sky brightness.
+
 def get_brightness(file_path, crop_percent=(0.0, 0.0, 0.6, 1.0)):
     try:
         with rawpy.imread(str(file_path)) as raw:
