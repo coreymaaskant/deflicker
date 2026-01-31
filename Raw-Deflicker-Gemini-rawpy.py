@@ -138,4 +138,11 @@ shell_script = "/home/ubuntu/deflicker/make-sunset-yst-dflk-raw.sh"
 print(f"Calling shell script: {shell_script} with Window={WINDOW_SIZE}, Poly={POLY_ORDER}")
 subprocess.run([shell_script, str(WINDOW_SIZE), str(POLY_ORDER)])
 
+# 6. Cleanup generated .pp3 files
+print("Cleaning up generated .pp3 files...")
+for f_path in files:
+    pp3_path = f_path.with_suffix(f_path.suffix + ".pp3")
+    if pp3_path.exists():
+        pp3_path.unlink()
+
 print(f"Completed at: {dt.now().strftime('%H:%M:%S')}")
