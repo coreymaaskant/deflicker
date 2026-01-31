@@ -84,7 +84,7 @@ ax2.grid(True, linestyle='--', alpha=0.6)
 
 # Generate filename and save
 timestamp = dt.now().strftime('%Y%m%d_%H%M%S')
-output_plot = GRAPH_PATH / f"deflicker_analysis_{WINDOW_SIZE}_{POLY_ORDER}.png"
+output_plot = GRAPH_PATH / f"deflicker_imagmagick_{WINDOW_SIZE}_{POLY_ORDER}.png"
 
 plt.savefig(output_plot, dpi=300, bbox_inches='tight')
 print(f"Plot saved to: {output_plot}")
