@@ -127,4 +127,9 @@ print(f"Plot saved to: {output_plot}")
 
 plt.close(fig) # Close to free up memory
 
+# 5. Call the shell script to process images and create video
+shell_script = "/home/ubuntu/deflicker/make-sunset-yst-dflk-raw.sh"
+print(f"Calling shell script: {shell_script} with Window={WINDOW_SIZE}, Poly={POLY_ORDER}")
+subprocess.run([shell_script, str(WINDOW_SIZE), str(POLY_ORDER)])
+
 print(f"Completed at: {dt.now().strftime('%H:%M:%S')}")
