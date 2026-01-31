@@ -22,7 +22,7 @@ do
 done
 
 cd "$basedir""sunset_jpgs"
-ffmpeg -framerate 24 -pattern_type glob -i '*.tif' -c:v libx264 -pix_fmt yuv420p -crf 18 -preset slow -colorspace bt709 -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" dcraw-win41-poly3-tif-24fps.mp4
+ffmpeg -framerate 24 -pattern_type glob -i '*.tif' -c:v libx264 -pix_fmt yuv420p -crf 18 -preset slow -colorspace bt709 -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" dcraw-win71-poly2-tif-24fps.mp4
 
 #cd "$basedir""sunset_jpgs-2"
 #ffmpeg -framerate 24 -pattern_type glob -i '*.jpg' -c:v libx264 -pix_fmt yuv420p -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" out-raw-24fps.mp4
