@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt  # Added for graphing
 # Configuration
 SOURCE_PATH = Path("/home/ubuntu/2023-07-18")
 PROFILE_TEMPLATE = Path("/home/ubuntu/.config/RawTherapee/profiles/sunset.pp3")
-WINDOW_SIZE = 41  # Must be odd
-POLY_ORDER = 3
+WINDOW_SIZE = 71  # Must be odd
+POLY_ORDER = 2
 
 def get_brightness(file_path):
     """Extracts mean brightness using dcraw and ImageMagick."""
