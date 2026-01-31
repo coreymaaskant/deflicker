@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt  # Added for graphing
 SOURCE_PATH = Path("/home/ubuntu/2023-07-18")
 GRAPH_PATH = Path("/home/ubuntu/deflicker-testing")
 PROFILE_TEMPLATE = Path("/home/ubuntu/.config/RawTherapee/profiles/sunset.pp3")
-WINDOW_SIZE = 31  # Must be odd
+WINDOW_SIZE = 51  # Must be odd
 POLY_ORDER = 2
 
 # 1. Moderate Smoothing (Balanced)

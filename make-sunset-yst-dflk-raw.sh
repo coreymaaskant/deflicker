@@ -26,7 +26,7 @@ do
 done
 
 cd "$basedir""sunset_jpgs"
-ffmpeg -framerate 24 -pattern_type glob -i '*.tif' -c:v libx264 -pix_fmt yuv420p -crf 18 -preset slow -colorspace bt709 -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" "/home/ubuntu/deflicker-testing/deflicker_rawpy_w${WINDOW_SIZE}_p${POLY_ORDER}.mp4"
+ffmpeg -framerate 24 -pattern_type glob -i '*.tif' -c:v libx264 -pix_fmt yuv420p -crf 18 -preset slow -colorspace bt709 -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" "/home/ubuntu/deflicker-testing/deflicker_rawpy_w${WINDOW_SIZE}_p${POLY_ORDER}.mp4" > /dev/null 2>&1
 
 cd "$basedir"
 rm -rf "$basedir""sunset_jpgs"
