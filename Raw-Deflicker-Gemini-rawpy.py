@@ -26,23 +26,37 @@ POLY_ORDER = 2
 # Why: If your noise is severe and your signal features are broad, a larger window with a quadratic 
 # fit provides heavy suppression of high-frequency fluctuations.
 
-def get_brightness(file_path):
-    """
-    Decodes RAW and calculates mean brightness using NumPy.
-    Replaces dcraw and ImageMagick.
-    """
+def get_brightness(file_path, crop_percent=(0.0, 0.0, 0.6, 1.0)):
     try:
         with rawpy.imread(str(file_path)) as raw:
-            # postprocess(user_flip=0) prevents auto-rotation and scaling
-            # half_size=True makes it MUCH faster for brightness analysis
-            rgb = raw.postprocess(use_camera_wb=False, 
-                                 user_flip=0, 
-                                 no_auto_bright=True, 
-                                 half_size=True)
+            rgb = raw.postprocess(use_camera_wb=True, 
+                                  user_flip=0, 
+                                  no_auto_bright=True, 
+                                  half_size=True,
+                                  gamma=(1,1))
             
-            # Convert to grayscale (Luminance Y' ≈ 0.299R + 0.587G + 0.114B)
-            # Or simply take the mean of all pixels for a raw estimate
-            return np.mean(rgb)
+            h, w, _ = rgb.shape
+            
+            if crop_percent:
+                top_p, left_p, height_p, width_p = crop_percent
+                
+                # Calculate coordinates and clip them to image boundaries
+                y1 = int(np.clip(h * top_p, 0, h))
+                x1 = int(np.clip(w * left_p, 0, w))
+                y2 = int(np.clip(y1 + (h * height_p), 0, h))
+                x2 = int(np.clip(x1 + (w * width_p), 0, w))
+                
+                # Apply the slice
+                rgb = rgb[y1:y2, x1:x2, :]
+
+            # --- Safety Check ---
+            if rgb.size == 0:
+                print(f"Warning: Crop for {file_path} resulted in 0 pixels. Check your crop_percent values.")
+                return None
+
+            weights = np.array([0.299, 0.587, 0.114])
+            return np.dot(rgb[...,:3], weights).mean()
+            
     except Exception as e:
         print(f"Failed to process {file_path}: {e}")
         return None
