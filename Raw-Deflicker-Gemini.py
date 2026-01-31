@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt  # Added for graphing
 
 # Configuration
 SOURCE_PATH = Path("/home/ubuntu/2023-07-18")
+GRAPH_PATH = Path("/home/ubuntu/deflicker-testing")   
 PROFILE_TEMPLATE = Path("/home/ubuntu/.config/RawTherapee/profiles/sunset.pp3")
-WINDOW_SIZE = 31  # Must be odd
+WINDOW_SIZE = 21  # Must be odd
 POLY_ORDER = 1
 
 def get_brightness(file_path):
@@ -83,7 +84,7 @@ ax2.grid(True, linestyle='--', alpha=0.6)
 
 # Generate filename and save
 timestamp = dt.now().strftime('%Y%m%d_%H%M%S')
-output_plot = SOURCE_PATH / f"deflicker_analysis_{timestamp}.png"
+output_plot = GRAPH_PATH / f"deflicker_imagmagick_{WINDOW_SIZE}_{POLY_ORDER}.png"
 
 plt.savefig(output_plot, dpi=300, bbox_inches='tight')
 print(f"Plot saved to: {output_plot}")
