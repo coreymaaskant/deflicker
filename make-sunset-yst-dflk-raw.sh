@@ -16,7 +16,7 @@ cd "$basedir"
 for f in $FILES
 do
    if [[ $f == *.CR2 ]]; then
-      rawtherapee-cli -o "$basedir""sunset_jpgs" -s -b16 -t -c "$f"
+      rawtherapee-cli -o "$basedir""sunset_jpgs" -s -b16 -t -c "$f" > /dev/null 2>&1
       #rawtherapee-cli -o "$basedir""sunset_jpgs-2"  -p /home/ubuntu/.config/RawTherapee/profiles/sunset.pp3 -j100 -js3 -c "$f" 
    fi   
 done
