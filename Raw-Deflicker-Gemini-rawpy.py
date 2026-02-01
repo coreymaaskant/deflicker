@@ -1,6 +1,7 @@
 import os
 import subprocess
 import shlex
+import shutil
 import numpy as np
 from scipy import signal
 from datetime import datetime as dt
@@ -12,8 +13,9 @@ import matplotlib.pyplot as plt  # Added for graphing
 SOURCE_PATH = Path("/home/ubuntu/2023-07-18")
 GRAPH_PATH = Path("/home/ubuntu/deflicker-testing")
 PROFILE_TEMPLATE = Path("/home/ubuntu/.config/RawTherapee/profiles/sunset.pp3")
-WINDOW_SIZE = 51  # Must be odd
-POLY_ORDER = 2
+TIFF_PATH = Path("/home/ubuntu/2023-07-18/")
+WINDOW_SIZE = 31  # Must be odd
+POLY_ORDER = 1
 
 # 1. Moderate Smoothing (Balanced)
 # window_length: 31 to 51
@@ -67,6 +69,26 @@ def get_brightness(file_path, crop_percent=(0.0, 0.0, 0.6, 1.0)):
         print(f"Failed to process {file_path}: {e}")
         return None
 
+def get_brightness_tiff(file_path, crop_percent=(0.0, 0.0, 0.6, 1.0)):
+    try:
+        img = plt.imread(str(file_path))
+        
+        # Handle dimensions
+        h, w = img.shape[:2]
+        
+        if crop_percent:
+            top_p, left_p, height_p, width_p = crop_percent
+            y1 = int(np.clip(h * top_p, 0, h))
+            x1 = int(np.clip(w * left_p, 0, w))
+            y2 = int(np.clip(y1 + (h * height_p), 0, h))
+            x2 = int(np.clip(x1 + (w * width_p), 0, w))
+            img = img[y1:y2, x1:x2]
+
+        return img.mean()
+    except Exception as e:
+        print(f"Failed to process TIFF {file_path}: {e}")
+        return None
+
 # 1. Gather files and Analyze
 files = sorted([f for f in SOURCE_PATH.iterdir() if f.is_file()])
 brightness_values = []
@@ -99,8 +121,24 @@ for k, f_path in enumerate(files):
             else:
                 out_file.write(line)
 
-# --- 4. Plotting & Saving Section ---
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
+# 4. Call the shell script to process images and create video
+shell_script = "/home/ubuntu/deflicker/make-sunset-yst-dflk-raw.sh"
+print(f"Calling shell script: {shell_script} with Window={WINDOW_SIZE}, Poly={POLY_ORDER}")
+subprocess.run([shell_script, str(WINDOW_SIZE), str(POLY_ORDER)])
+
+# 5. Analyze Generated TIFFs
+tiff_folder = TIFF_PATH / "sunset_tiffs"
+tiff_files = sorted(list(tiff_folder.glob("*.tif")))
+tiff_brightness = []
+
+print(f"Analyzing {len(tiff_files)} TIFF files...")
+for f in tiff_files:
+    m = get_brightness_tiff(f)
+    if m is not None:
+        tiff_brightness.append(m)
+
+# --- 6. Plotting & Saving Section ---
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 15), sharex=True)
 plt.subplots_adjust(hspace=0.3)
 
 # Top Graph: Brightness Comparison
@@ -111,15 +149,22 @@ ax1.set_ylabel('Mean Pixel Value')
 ax1.legend()
 ax1.grid(True, linestyle='--', alpha=0.6)
 
-# Bottom Graph: Exposure Compensation
+# Middle Graph: Exposure Compensation
 # Note: E + 1 reflects the actual value written to the .pp3 files
 ax2.plot(E + 1, label='Final Compensation (E + 1)', color='red')
 ax2.axhline(y=1, color='black', linestyle='-', linewidth=0.8) # Baseline at +1
 ax2.set_title('Calculated Exposure Adjustment (Stops)', fontsize=14)
 ax2.set_ylabel('Exposure Value (EV)')
-ax2.set_xlabel('Frame Number')
 ax2.legend()
 ax2.grid(True, linestyle='--', alpha=0.6)
+
+# Bottom Graph: Final TIFF Brightness
+ax3.plot(tiff_brightness, label='Final TIFF Brightness', color='green')
+ax3.set_title('Final Output Brightness (TIFFs)', fontsize=14)
+ax3.set_ylabel('Mean Pixel Value')
+ax3.set_xlabel('Frame Number')
+ax3.legend()
+ax3.grid(True, linestyle='--', alpha=0.6)
 
 # Generate filename and save
 timestamp = dt.now().strftime('%Y%m%d_%H%M%S')
@@ -128,14 +173,11 @@ output_plot = GRAPH_PATH / f"deflicker_rawpy_{WINDOW_SIZE}_{POLY_ORDER}.png"
 plt.savefig(output_plot, dpi=300, bbox_inches='tight')
 print(f"Plot saved to: {output_plot}")
 
-# Optional: Still show the window if you're running interactively
-# plt.show() 
-
 plt.close(fig) # Close to free up memory
 
-# 5. Call the shell script to process images and create video
-shell_script = "/home/ubuntu/deflicker/make-sunset-yst-dflk-raw.sh"
-print(f"Calling shell script: {shell_script} with Window={WINDOW_SIZE}, Poly={POLY_ORDER}")
-subprocess.run([shell_script, str(WINDOW_SIZE), str(POLY_ORDER)])
+# 7. Cleanup TIFFs
+if tiff_folder.exists():
+    print(f"Cleaning up TIFF folder: {tiff_folder}")
+    shutil.rmtree(tiff_folder)
 
 print(f"Completed at: {dt.now().strftime('%H:%M:%S')}")
