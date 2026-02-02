@@ -7,6 +7,7 @@ from scipy import signal
 from datetime import datetime as dt
 from pathlib import Path
 import rawpy
+import csv
 import matplotlib.pyplot as plt  # Added for graphing
 
 # Configuration
@@ -14,8 +15,9 @@ SOURCE_PATH = Path("/home/ubuntu/2023-07-18")
 GRAPH_PATH = Path("/home/ubuntu/deflicker-testing")
 PROFILE_TEMPLATE = Path("/home/ubuntu/.config/RawTherapee/profiles/sunset.pp3")
 TIFF_PATH = Path("/home/ubuntu/2023-07-18/")
-WINDOW_SIZE = 31  # Must be odd
+WINDOW_SIZE = 51  # Must be odd
 POLY_ORDER = 1
+EV_OFFSET = 1
 
 # 1. Moderate Smoothing (Balanced)
 # window_length: 31 to 51
@@ -117,7 +119,7 @@ for k, f_path in enumerate(files):
         for line in template_lines:
             if line.startswith("Compensation="):
                 # Apply the calculated compensation (+1 I seem to just add 1 stop to all my 5D raw files)
-                out_file.write(f"Compensation={E[k] + 1}\n")
+                out_file.write(f"Compensation={E[k] + EV_OFFSET}\n")
             else:
                 out_file.write(line)
 
@@ -150,8 +152,8 @@ ax1.legend()
 ax1.grid(True, linestyle='--', alpha=0.6)
 
 # Middle Graph: Exposure Compensation
-# Note: E + 1 reflects the actual value written to the .pp3 files
-ax2.plot(E + 1, label='Final Compensation (E + 1)', color='red')
+# Note: E + EV_OFFSET reflects the actual value written to the .pp3 files
+ax2.plot(E + EV_OFFSET, label='Final Compensation (E + EV_OFFSET)', color='red')
 ax2.axhline(y=1, color='black', linestyle='-', linewidth=0.8) # Baseline at +1
 ax2.set_title('Calculated Exposure Adjustment (Stops)', fontsize=14)
 ax2.set_ylabel('Exposure Value (EV)')
@@ -174,6 +176,20 @@ plt.savefig(output_plot, dpi=300, bbox_inches='tight')
 print(f"Plot saved to: {output_plot}")
 
 plt.close(fig) # Close to free up memory
+
+# 6.5 Save brightness data to CSV
+csv_output_path = GRAPH_PATH / f"deflicker_rawpy_brightness_{WINDOW_SIZE}_{POLY_ORDER}.csv"
+print(f"Saving brightness data to: {csv_output_path}")
+
+with open(csv_output_path, 'w', newline='') as csvfile:
+    csv_writer = csv.writer(csvfile)
+    csv_writer.writerow(['Frame', 'RawBrightness', 'SmoothedBrightness', 'ExposureCompensation', 'TiffBrightness'])
+
+    # Write data row by row
+    for i in range(len(M)):
+        # Handle case where tiff_brightness might be shorter if analysis failed
+        tiff_val = tiff_brightness[i] if i < len(tiff_brightness) else ''
+        csv_writer.writerow([i, M[i], y_smooth[i], E[i], tiff_val])
 
 # 7. Cleanup TIFFs
 if tiff_folder.exists():
