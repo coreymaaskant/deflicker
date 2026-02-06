@@ -12,13 +12,14 @@ from PIL import Image
 import matplotlib.pyplot as plt  # Added for graphing
 
 # Configuration
-SOURCE_PATH = Path("/home/ubuntu/2023-07-18")
+SOURCE_PATH = Path("/home/ubuntu")
+FOLDER = "2022-06-29"
 GRAPH_PATH = Path("/home/ubuntu/deflicker-testing")
 PROFILE_TEMPLATE = Path("/home/ubuntu/.config/RawTherapee/profiles/sunset.pp3")
-TIFF_PATH = Path("/home/ubuntu/2023-07-18/")
+TIFF_PATH = SOURCE_PATH / FOLDER / "sunset_tiffs"
 WINDOW_SIZE = 51  # Must be odd
-POLY_ORDER = 1
-EV_OFFSET = 0
+POLY_ORDER = 2
+EV_OFFSET = 1
 
 # 1. Moderate Smoothing (Balanced)
 # window_length: 31 to 51
@@ -93,7 +94,7 @@ def get_brightness_tiff(file_path, crop_percent=(0.0, 0.0, 0.6, 1.0)):
         return None
 
 # 1. Gather files and Analyze
-files = sorted([f for f in SOURCE_PATH.iterdir() if f.is_file()])
+files = sorted([f for f in (SOURCE_PATH / FOLDER).iterdir() if f.is_file()])
 brightness_values = []
 
 print(f"Starting analysis at: {dt.now().strftime('%H:%M:%S')}")
@@ -126,11 +127,12 @@ for k, f_path in enumerate(files):
 
 # 4. Call the shell script to process images and create video (PASS 1)
 shell_script = "/home/ubuntu/deflicker/make-sunset-yst-dflk-raw.sh"
-print(f"--- Running Pass 1: Generating initial TIFFs and video ---")
-subprocess.run([shell_script, str(WINDOW_SIZE), str(POLY_ORDER)])
+folder_name = FOLDER
+print(f"--- Running Pass 1: Generating initial TIFFs and video for {folder_name} ---")
+subprocess.run([shell_script, str(WINDOW_SIZE), str(POLY_ORDER), str(SOURCE_PATH / FOLDER)])
 
 # 5. Analyze Generated TIFFs (from Pass 1)
-tiff_folder = TIFF_PATH / "sunset_tiffs"
+tiff_folder = TIFF_PATH
 tiff_files = sorted(list(tiff_folder.glob("*.tif")))
 tiff_brightness_p1 = []
 tiff_brightness_p2 = []
@@ -177,7 +179,7 @@ if tiff_files:
     print("Pillow adjustments complete. Re-running FFMPEG.")
     
     # Re-run FFMPEG to create the final video with -y to overwrite
-    video_out_path = GRAPH_PATH / f"deflicker_rawpy_w{WINDOW_SIZE}_p{POLY_ORDER}.mp4"
+    video_out_path = GRAPH_PATH / f"deflicker_rawpy_{folder_name}_w{WINDOW_SIZE}_p{POLY_ORDER}.mp4"
     ffmpeg_cmd = [
         'ffmpeg', '-y',
         '-framerate', '24',
@@ -238,7 +240,7 @@ if E_adjust is not None:
 
 # Generate filename and save
 timestamp = dt.now().strftime('%Y%m%d_%H%M%S')
-output_plot = GRAPH_PATH / f"deflicker_rawpy_{WINDOW_SIZE}_{POLY_ORDER}.png"
+output_plot = GRAPH_PATH / f"deflicker_rawpy_{folder_name}_{WINDOW_SIZE}_{POLY_ORDER}.png"
 
 plt.savefig(output_plot, dpi=300, bbox_inches='tight')
 print(f"Plot saved to: {output_plot}")
@@ -246,7 +248,7 @@ print(f"Plot saved to: {output_plot}")
 plt.close(fig) # Close to free up memory
 
 # 6.5 Save brightness data to CSV
-csv_output_path = GRAPH_PATH / f"deflicker_rawpy_brightness_{WINDOW_SIZE}_{POLY_ORDER}.csv"
+csv_output_path = GRAPH_PATH / f"deflicker_rawpy_brightness_{folder_name}_{WINDOW_SIZE}_{POLY_ORDER}.csv"
 print(f"Saving brightness data to: {csv_output_path}")
 
 with open(csv_output_path, 'w', newline='') as csvfile:
