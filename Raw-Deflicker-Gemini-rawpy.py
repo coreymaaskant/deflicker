@@ -21,6 +21,7 @@ WINDOW_SIZE = 51  # Must be odd
 POLY_ORDER = 2
 EV_OFFSET = 1
 
+# EV_OFFSET adds X stops of exposure compensation to the raw to tiff conversion. 
 # 1. Moderate Smoothing (Balanced)
 # window_length: 31 to 51
 # polyorder: 3

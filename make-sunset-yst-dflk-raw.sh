@@ -3,7 +3,8 @@
 # █▀▄▀█ ▄▀█ █▄▀ █▀▀ ▄▄ █▀ █░█ █▄░█ █▀ █▀▀ ▀█▀
 # █░▀░█ █▀█ █░█ ██▄ ░░ ▄█ █▄█ █░▀█ ▄█ ██▄ ░█░
 #
-#  Uses exiftool to find and process raw image files taken after a certain hour of the day.`	
+# convert the raws save tiffs and delete the .pp3 sidecar files
+#
 
 WINDOW_SIZE=${1:-"default"}
 POLY_ORDER=${2:-"default"}
